@@ -25,6 +25,8 @@ var getClientEnvironment = require('./env');
 var path = require('path');
 // @remove-on-eject-end
 
+var ComponentResolverPlugin = require('component-resolver-webpack');
+
 function ensureSlash(path, needsSlash) {
   var hasSlash = path.endsWith('/');
   if (hasSlash && !needsSlash) {
@@ -158,8 +160,8 @@ module.exports = {
         loader: 'babel',
         // @remove-on-eject-begin
         query: {
-          babelrc: false,
-          presets: [require.resolve('babel-preset-react-app')],
+          babelrc: true,
+          presets: [require.resolve('babel-preset-react-app'), require.resolve('./babel-preset-custom')],
         },
         // @remove-on-eject-end
       },
@@ -202,7 +204,7 @@ module.exports = {
     // TODO: consider separate config for production,
     // e.g. to enable no-console and no-debugger only in production.
     configFile: path.join(__dirname, '../.eslintrc'),
-    useEslintrc: false
+    useEslintrc: true
   },
   // @remove-on-eject-end
   // We use PostCSS for autoprefixing only.
@@ -219,6 +221,11 @@ module.exports = {
     ];
   },
   plugins: [
+    // Allows us to resolve files without duplicating filename
+    // like "./Button"" could be resolved to "./Button/Button.js""
+    new webpack.ResolverPlugin([
+      new ComponentResolverPlugin(['jsx', 'js', 'css'])
+    ]),
     // Makes the public URL available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In production, it will be an empty string unless you specify "homepage"

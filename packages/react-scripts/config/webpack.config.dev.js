@@ -23,6 +23,8 @@ var paths = require('./paths');
 var path = require('path');
 // @remove-on-eject-end
 
+var ComponentResolverPlugin = require('component-resolver-webpack');
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
 var publicPath = '/';
@@ -88,6 +90,7 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/290
     extensions: ['.js', '.json', '.jsx', ''],
     alias: {
+      '~': paths.appSrc,
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web'
@@ -147,8 +150,8 @@ module.exports = {
         loader: 'babel',
         query: {
           // @remove-on-eject-begin
-          babelrc: false,
-          presets: [require.resolve('babel-preset-react-app')],
+          babelrc: true,
+          presets: [require.resolve('babel-preset-react-app'), require.resolve('./babel-preset-custom')],
           // @remove-on-eject-end
           // This is a feature of `babel-loader` for webpack (not Babel itself).
           // It enables caching results in ./node_modules/.cache/babel-loader/
@@ -185,7 +188,7 @@ module.exports = {
   // Point ESLint to our predefined config.
   eslint: {
     configFile: path.join(__dirname, '../.eslintrc'),
-    useEslintrc: false
+    useEslintrc: true
   },
   // @remove-on-eject-end
   // We use PostCSS for autoprefixing only.
@@ -202,6 +205,11 @@ module.exports = {
     ];
   },
   plugins: [
+    // Allows us to resolve files without duplicating filename
+    // like "./Button"" could be resolved to "./Button/Button.js""
+    new webpack.ResolverPlugin([
+      new ComponentResolverPlugin(['jsx', 'js', 'css'])
+    ]),
     // Makes the public URL available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In development, this will be an empty string.
